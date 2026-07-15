@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PetHaven · Tienda de mascotas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#FF7A59; --primary-dark:#E8613F; --ink:#2B2B33; --muted:#6b6b76;
+    --bg:#FBFAF7; --card:#ffffff; --line:#ECEAE4; --accent:#3FA796;
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:'Poppins',sans-serif; background:var(--bg); color:var(--ink); }
+  header{ display:flex; align-items:center; justify-content:space-between; padding:18px 32px; background:#fff; border-bottom:1px solid var(--line); position:sticky; top:0; z-index:10; }
+  .logo{ font-family:'Fredoka',sans-serif; font-size:22px; font-weight:600; color:var(--primary-dark); display:flex; align-items:center; gap:8px; }
+  nav a{ margin-left:26px; text-decoration:none; color:var(--ink); font-size:14px; font-weight:500; }
+  .cart-btn{ background:var(--ink); color:#fff; border:none; padding:10px 18px; border-radius:30px; font-size:14px; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:8px; }
+  .cart-count{ background:var(--primary); border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:11px; }
+
+  .hero{ text-align:center; padding:50px 20px 30px; }
+  .hero h1{ font-family:'Fredoka',sans-serif; font-size:clamp(28px,5vw,44px); margin:0 0 10px; }
+  .hero p{ color:var(--muted); font-size:15px; max-width:520px; margin:0 auto; }
+
+  .catalog{ max-width:1080px; margin:20px auto 60px; padding:0 24px; display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:22px; }
+  .pet-card{ background:var(--card); border:1px solid var(--line); border-radius:18px; overflow:hidden; cursor:pointer; transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease; position:relative; }
+  .pet-card:hover{ transform:translateY(-4px); box-shadow:0 14px 30px rgba(0,0,0,.08); }
+  .pet-card.selected{ border-color:var(--primary); box-shadow:0 0 0 3px rgba(255,122,89,.25); }
+  .pet-card .check{ position:absolute; top:10px; right:10px; width:26px; height:26px; border-radius:50%; background:#fff; border:2px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:14px; color:transparent; transition:.2s ease; }
+  .pet-card.selected .check{ background:var(--primary); border-color:var(--primary); color:#fff; }
+  .pet-img{ height:150px; display:flex; align-items:center; justify-content:center; font-size:64px; background:linear-gradient(160deg,#FFF3EC,#FDEDE4); }
+  .pet-info{ padding:14px 16px 18px; }
+  .pet-name{ font-weight:600; font-size:16px; margin:0 0 2px; }
+  .pet-breed{ font-size:12.5px; color:var(--muted); margin:0 0 10px; }
+  .pet-price{ font-family:'Fredoka',sans-serif; font-size:18px; color:var(--primary-dark); font-weight:600; }
+  .pet-tag{ display:inline-block; font-size:10.5px; background:rgba(63,167,150,.12); color:var(--accent); padding:3px 9px; border-radius:20px; margin-top:6px; font-weight:600; }
+
+  .checkout-bar{ position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid var(--line); padding:16px 24px; display:flex; align-items:center; justify-content:space-between;
+    transform:translateY(110%); transition:transform .35s ease; box-shadow:0 -8px 24px rgba(0,0,0,.06); z-index:20; }
+  .checkout-bar.show{ transform:translateY(0); }
+  .checkout-info{ font-size:14px; }
+  .checkout-info b{ font-family:'Fredoka',sans-serif; font-size:17px; display:block; color:var(--ink); }
+  .pay-btn{ background:var(--primary); color:#fff; border:none; padding:13px 30px; border-radius:30px; font-size:15px; font-weight:600; cursor:pointer; transition:transform .2s ease, background .2s ease; }
+  .pay-btn:hover{ background:var(--primary-dark); transform:translateY(-1px); }
+  .pay-btn:disabled{ opacity:.7; cursor:default; }
+
+  footer{ text-align:center; padding:26px; color:var(--muted); font-size:12.5px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🐾 PetHaven</div>
+  <nav>
+    <a href="#">Inicio</a>
+    <a href="#">Catálogo</a>
+    <a href="#">Nosotros</a>
+  </nav>
+  <button class="cart-btn">🛒 Carrito <span class="cart-count" id="cart-count">0</span></button>
+</header>
+
+<section class="hero">
+  <h1>Encuentra a tu nuevo mejor amigo</h1>
+  <p>Selecciona una mascota del catálogo para reservarla. Todos nuestros animalitos están vacunados y listos para su nuevo hogar.</p>
+</section>
+
+<div class="catalog" id="catalog"></div>
+
+<div class="checkout-bar" id="checkout-bar">
+  <div class="checkout-info">
+    <span id="checkout-label">Selecciona una mascota</span>
+    <b id="checkout-price">—</b>
+  </div>
+  <button class="pay-btn" id="pay-btn" disabled>Pagar</button>
+</div>
+
+<footer>© 2026 PetHaven · Tienda de mascotas ficticia</footer>
+
+<script>
+  const pets = [
+    { emoji:'🐶', name:'Toby', breed:'Golden Retriever · 3 meses', price:'$450', tag:'Vacunado' },
+    { emoji:'🐱', name:'Luna', breed:'Gato Siamés · 2 meses', price:'$300', tag:'Esterilizada' },
+    { emoji:'🐰', name:'Nube', breed:'Conejo enano · 4 meses', price:'$120', tag:'Vacunado' },
+    { emoji:'🐹', name:'Copito', breed:'Hámster sirio · 6 semanas', price:'$45', tag:'Nuevo' },
+    { emoji:'🐦', name:'Kiwi', breed:'Periquito australiano', price:'$80', tag:'Nuevo' },
+    { emoji:'🐢', name:'Tortuguita', breed:'Tortuga de tierra', price:'$150', tag:'Vacunado' },
+    { emoji:'🐕', name:'Rocky', breed:'Bulldog Francés · 4 meses', price:'$700', tag:'Popular' },
+    { emoji:'🐈', name:'Mimi', breed:'Gato Persa · 3 meses', price:'$380', tag:'Vacunado' },
+  ];
+
+  const catalog = document.getElementById('catalog');
+  pets.forEach((p, i)=>{
+    const card = document.createElement('div');
+    card.className = 'pet-card';
+    card.dataset.idx = i;
+    card.innerHTML = `
+      <div class="check">✓</div>
+      <div class="pet-img">${p.emoji}</div>
+      <div class="pet-info">
+        <p class="pet-name">${p.name}</p>
+        <p class="pet-breed">${p.breed}</p>
+        <div class="pet-price">${p.price}</div>
+        <span class="pet-tag">${p.tag}</span>
+      </div>`;
+    catalog.appendChild(card);
+  });
+
+  let selected = null;
+  const checkoutBar = document.getElementById('checkout-bar');
+  const checkoutLabel = document.getElementById('checkout-label');
+  const checkoutPrice = document.getElementById('checkout-price');
+  const payBtn = document.getElementById('pay-btn');
+  const cartCount = document.getElementById('cart-count');
+
+  catalog.addEventListener('click', (e)=>{
+    const card = e.target.closest('.pet-card');
+    if(!card) return;
+    document.querySelectorAll('.pet-card').forEach(c=> c.classList.remove('selected'));
+    card.classList.add('selected');
+    selected = pets[card.dataset.idx];
+    checkoutLabel.textContent = `${selected.name} · ${selected.breed}`;
+    checkoutPrice.textContent = selected.price;
+    checkoutBar.classList.add('show');
+    payBtn.disabled = false;
+    cartCount.textContent = '1';
+  });
+
+  payBtn.addEventListener('click', ()=>{
+    if(!selected) return;
+    payBtn.disabled = true;
+    payBtn.textContent = 'Procesando...';
+    setTimeout(()=>{
+      window.location.href = 'propuesta.html';
+    }, 900);
+  });
+</script>
+
+</body>
+</html>
