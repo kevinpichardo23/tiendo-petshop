@@ -46,6 +46,23 @@
   .pay-btn:disabled{ opacity:.7; cursor:default; }
 
   footer{ text-align:center; padding:26px; color:var(--muted); font-size:12.5px; }
+
+  @media (max-width:600px){
+    header{ padding:14px 16px; }
+    .logo{ font-size:18px; }
+    nav{ display:none; }
+    .cart-btn{ padding:8px 14px; font-size:13px; }
+    .hero{ padding:36px 16px 22px; }
+    .hero p{ font-size:13.5px; }
+    .catalog{ padding:0 16px; gap:14px; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); margin-bottom:90px; }
+    .pet-img{ height:110px; font-size:46px; }
+    .pet-info{ padding:10px 12px 14px; }
+    .pet-name{ font-size:14.5px; }
+    .checkout-bar{ padding:12px 16px; flex-wrap:wrap; gap:8px; }
+    .checkout-info{ font-size:12.5px; }
+    .checkout-info b{ font-size:15px; }
+    .pay-btn{ padding:11px 22px; font-size:14px; }
+  }
 </style>
 </head>
 <body>
